@@ -1,6 +1,7 @@
 package com.GameShop.GameShop.service.game.impl;
 
 import com.GameShop.GameShop.domain.game.Game;
+import com.GameShop.GameShop.domain.gamer.Gamer;
 import com.GameShop.GameShop.repository.game.GameRepository;
 import com.GameShop.GameShop.service.game.GameService;
 import org.apache.coyote.BadRequestException;
@@ -33,6 +34,14 @@ public class GameServiceImpl implements GameService {
     @Override
     public void update(Long id, Game game) {
         if(!gameRepository.findById(id).isEmpty()){
+            Game updateGame = gameRepository.findById(game.getId()).orElse(null);
+
+            updateGame.setName(game.getName());
+            updateGame.setDescription(game.getDescription());
+            updateGame.setPrice(game.getPrice());
+            updateGame.setGenre(game.getGenre());
+            updateGame.setAgeLimit(game.getAgeLimit());
+
             gameRepository.save(game);
             log.info("Update game: {}",gameRepository.findById(game.getId()));
         }

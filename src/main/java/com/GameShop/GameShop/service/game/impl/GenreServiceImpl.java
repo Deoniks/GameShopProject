@@ -33,6 +33,8 @@ public class GenreServiceImpl implements GenreService {
     @Override
     public void update(Long id, Genre genre) {
         if(!genreRepository.findById(id).isEmpty()){
+            Genre updateGenre = genreRepository.findById(id).orElse(null);
+            updateGenre.setGenre(genre.getGenre());
             genreRepository.save(genre);
             log.info("Update genre: {}",genreRepository.findById(genre.getId()));
         }

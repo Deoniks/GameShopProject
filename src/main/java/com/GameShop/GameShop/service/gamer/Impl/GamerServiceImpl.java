@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.Iterator;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class GamerServiceImpl implements GamerService {
@@ -34,8 +35,18 @@ public class GamerServiceImpl implements GamerService {
     @Override
     public void update(Long id, Gamer gamer) {
         if(!gamerRepository.findById(id).isEmpty()){
+            Gamer updateGamer = gamerRepository.findById(gamer.getId()).orElse(null);
+            updateGamer.setFirstName(gamer.getFirstName());
+            updateGamer.setLastName(gamer.getLastName());
+            updateGamer.setCountry(gamer.getCountry());
+            updateGamer.setLogin(gamer.getLogin());
+            updateGamer.setPassword(gamer.getPassword());
+            updateGamer.setAge(gamer.getAge());
+            updateGamer.setGames(gamer.getGames());
             gamerRepository.save(gamer);
             log.info("Update user: {}", gamerRepository.findById(gamer.getId()));
+        }else{
+            throw new RuntimeException("Gamer it's not find");
         }
     }
 
@@ -46,35 +57,36 @@ public class GamerServiceImpl implements GamerService {
     }
 
     @Override
-    public void addGameToGamer(Long gamerId, Long gameId) {
-        Gamer gamer = getById(gamerId);
-        if(gamer != null){
-            boolean check = gamer.getGames().stream()
-                    .anyMatch(game -> game.getId().equals(gameId));
-            if(check){
-                log.info("The user already owns this game");
-            }else {
-                Game game = new Game();
-                game.setId(gameId);
-                gamer.getGames().add(game);
-                gamerRepository.save(gamer);
-                log.info("User is successfully add game");
-            }
-        }
-    }
-
-    @Override
-    public void removeGameFromGamer(Long gamerId, Long gameId) {
-        Gamer gamer = getById(gameId);
-        if(gamer != null){
-            gamer.getGames().removeIf(game -> game.getId().equals(gameId));
+    public void addGame(Long gamerId, Game game) {
+        Optional<Gamer>optionalGamer = gamerRepository.findById(gamerId);
+        if(optionalGamer.isPresent()){
+            Gamer gamer = optionalGamer.get();
+            gamer.getGames().add(game);
             gamerRepository.save(gamer);
+            log.info("Game successfully add",gamerRepository.findById(gamer.getId()));
+        }else {
+            log.info("Gamer not find");
         }
     }
 
     @Override
-    public Gamer getById(Long id) {
+    public Optional<Game> getGameById(Long gamerId, Long gameId) {
+        Optional<Gamer>optionalGamer = gamerRepository.findById(gamerId);
+        if(optionalGamer.isPresent()){
+            Gamer gamer = optionalGamer.get();
+            log.info("find game: ", gamer.getGames());
+            return gamer.getGames().stream()
+                    .filter(game -> game.getId().equals(gameId))
+                    .findFirst();
+        }else {
+            log.info("Game not find");
+            return Optional.empty();
+        }
+    }
+
+    @Override
+    public Optional<Gamer> getById(Long id) {
         log.info("Find user: {}", gamerRepository.findById(id));
-        return gamerRepository.findById(id).orElse(null);
+        return gamerRepository.findById(id);
     }
 }
